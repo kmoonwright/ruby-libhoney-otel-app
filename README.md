@@ -1,4 +1,4 @@
-# Ruby OpenTelemetry + Libhoney Demo
+# Ruby OpenTelemetry + Libhoney Example
 
 Demonstrates how to:
 - Send traces to Honeycomb using OpenTelemetry SDK
