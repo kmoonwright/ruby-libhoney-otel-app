@@ -1,0 +1,51 @@
+# OpenTelemetry Collector Configuration
+# Routes traces (OTLP) and logs (libhoney) to Honeycomb
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+  libhoney:
+    http:
+      endpoint: 0.0.0.0:8080
+      traces_url_paths: ["/1/events", "/1/batch"]
+      compression_algorithms: [""]  # Required for Ruby libhoney
+    auth_api: https://api.honeycomb.io
+    fields:
+      resources:
+        service_name: service.name
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+exporters:
+  otlp:
+    endpoint: api.honeycomb.io:443
+    headers:
+      x-honeycomb-team: ${env:HONEYCOMB_API_KEY}
+
+  debug:
+    verbosity: detailed
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp, libhoney]
+      processors: [batch]
+      exporters: [otlp, debug]
+    logs:
+      receivers: [libhoney]
+      processors: [batch]
+      exporters: [otlp, debug]
+
